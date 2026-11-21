@@ -13,11 +13,10 @@ public class HotelContext : DbContext
     public DbSet<Treatment> Treatments => Set<Treatment>();
     public DbSet<SpaBooking> SpaBookings => Set<SpaBooking>();
     // AI säger ersätt min { get; set; } = null!; med => Set<Guest>() eftersom => retunerar samlingen va EF och man slipper null! 
-   protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-   {
-     string connectionString = Environment.GetEnvironmentVariable("HOTEL_DB")?? throw new InvalidOperationException("Miljövariabeln HOTEL_DB saknas.");
+    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+    {
+        string connectionString = "Data Source=HotelGrandioso/hotel.db";
 
         optionsBuilder.UseSqlite(connectionString);
-        //Ai hjälp gå tllbacks och kolla på kod
-   }
+    }
 }
