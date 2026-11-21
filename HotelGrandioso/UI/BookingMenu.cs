@@ -1,6 +1,7 @@
-﻿using HotelGrandioso.Data;
+﻿
+using HotelGrandioso.Data;
 using HotelGrandioso.Services;
-
+using HotelGrandioso.Models;
 namespace HotelGrandioso.UI;
 
 public class BookingMenu
@@ -56,12 +57,77 @@ public class BookingMenu
             Console.WriteLine("Utcheckningsdatum måste vara efter incheckningsdatum.");
             return;
         }
-        // Kontrollera om rummet är ledigt under de valda datumen
+        // borde förhindrar dubbelbokning genom att anropa IsRoomAvailable i BookingService
         if (!_bookingService.IsRoomAvailable(valtRum.Id, checkIn, checkOut))
         {
             Console.WriteLine("Rummet är redan bokat under den perioden.");
             return;
         }
+        Console.Write("Ange gästens förnamn: ");
+        string firstName = Console.ReadLine() ?? "";
+
+        if (string.IsNullOrWhiteSpace(firstName))
+        {
+            Console.WriteLine("Förnamn får inte vara tomt.");
+            return;
+        }
+        Console.Write("Ange gästens efternamn: ");
+        string lastName = Console.ReadLine() ?? "";
+
+        if (string.IsNullOrWhiteSpace(lastName))
+        {
+            Console.WriteLine("Efternamn får inte vara tomt.");
+            return;
+        }
+        // Skapa en ny gäst med användarens uppgifter
+        Guest guest = new Guest
+        {
+            FirstName = firstName,
+            LastName = lastName
+        };
+        // Starta en transaktion
+        using var transaction = _db.Database.BeginTransaction();
+
+        _db.Guests.Add(guest);
+        _db.SaveChanges();
+        // Skapa bokningen med BookingService
+        bool bookingSucceeded = _bookingService.BookRoom(
+            guest.Id,
+            valtRum.Id,
+            checkIn,
+            checkOut
+        );
+
+       
+        if (bookingSucceeded)
+        {
+            transaction.Commit();
+
+            int antalNatter = (checkOut - checkIn).Days;
+            decimal totalPris = antalNatter * valtRum.PricePerNight;
+
+            Console.WriteLine("Bokningen har skapats!");
+            Console.WriteLine($"Totalpris: {totalPris} kr för {antalNatter} nätter.");
+        }
+        else
+        {
+            Console.WriteLine("Bokningen kunde inte genomföras.");
+        }
     }
     // metod som hanterar bokning av rumm
+    public void VisaBokningar()
+    {
+        var bokningar = _bookingService.GetAllBookings();
+
+        if (bokningar.Count == 0)
+        {
+            Console.WriteLine("Det finns inga bokningar.");
+            return;
+        }
+
+        foreach (var bokning in bokningar)
+        {
+            Console.WriteLine($"Bokning {bokning.Id}: Rum-ID {bokning.RoomId}, {bokning.CheckIn:yyyy-MM-dd} till {bokning.CheckOut:yyyy-MM-dd}");
+        }
+    }
 }

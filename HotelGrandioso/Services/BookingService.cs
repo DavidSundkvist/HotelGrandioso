@@ -11,6 +11,10 @@ public class BookingService
     {
         _context = context;
     }
+    public List<Booking> GetAllBookings()
+    {
+        return _context.Bookings.ToList();
+    }
 
     public bool IsRoomAvailable(int roomId, DateTime checkIn, DateTime checkOut)
     {

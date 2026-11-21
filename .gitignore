@@ -12,3 +12,5 @@ obj/
 .DS_Store
 Thumbs.db
 /HotelGrandioso/hotel.db
+/HotelGrandioso/hotel.db-shm
+/HotelGrandioso/hotel.db-wal
