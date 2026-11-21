@@ -127,7 +127,7 @@ public class BookingMenu
 
         foreach (var bokning in bokningar)
         {
-            Console.WriteLine($"Bokning {bokning.Id}: Rum-ID {bokning.RoomId}, {bokning.CheckIn:yyyy-MM-dd} till {bokning.CheckOut:yyyy-MM-dd}");
+            Console.WriteLine($"Bokning {bokning.Id}: Rum {bokning.Room.RoomNumber}, {bokning.CheckIn:yyyy-MM-dd} till {bokning.CheckOut:yyyy-MM-dd}");
         }
     }
 }

@@ -1,5 +1,6 @@
 ﻿using HotelGrandioso.Data;
 using HotelGrandioso.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace HotelGrandioso.Services;
 
@@ -13,7 +14,7 @@ public class BookingService
     }
     public List<Booking> GetAllBookings()
     {
-        return _context.Bookings.ToList();
+        return _context.Bookings.Include(b => b.Room).ToList();
     }
 
     public bool IsRoomAvailable(int roomId, DateTime checkIn, DateTime checkOut)
@@ -46,6 +47,21 @@ public class BookingService
         };
 
         _context.Bookings.Add(booking);
+        _context.SaveChanges();
+
+        return true;
+    }
+    public bool CancelBooking(int bookingId)
+    {
+        var booking = _context.Bookings
+            .FirstOrDefault(b => b.Id == bookingId);
+
+        if (booking == null)
+        {
+            return false;
+        }
+
+        _context.Bookings.Remove(booking);
         _context.SaveChanges();
 
         return true;
