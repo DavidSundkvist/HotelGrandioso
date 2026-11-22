@@ -27,7 +27,7 @@ public class BookingMenu
             Console.WriteLine("Ogiltigt rumsnummer.");
             return;
         }
-        var valtRum = _db.Rooms.FirstOrDefault(r => r.RoomNumber == rumsnummer);
+        var valtRum = _bookingService.GetRoomByNumber(rumsnummer);
 
         if (valtRum == null)
         {
@@ -79,30 +79,18 @@ public class BookingMenu
             Console.WriteLine("Efternamn får inte vara tomt.");
             return;
         }
-        // Skapa en ny gäst med användarens uppgifter
-        Guest guest = new Guest
-        {
-            FirstName = firstName,
-            LastName = lastName
-        };
-        // Starta en transaktion
-        using var transaction = _db.Database.BeginTransaction();
+        bool bookingSucceeded = _bookingService.BookRoomForGuest(
+          firstName,
+          lastName,
+          valtRum.Id,
+          checkIn,
+          checkOut
+          );
 
-        _db.Guests.Add(guest);
-        _db.SaveChanges();
-        // Skapa bokningen med BookingService
-        bool bookingSucceeded = _bookingService.BookRoom(
-            guest.Id,
-            valtRum.Id,
-            checkIn,
-            checkOut
-        );
 
-       
         if (bookingSucceeded)
         {
-            transaction.Commit();
-
+         
             int antalNatter = (checkOut - checkIn).Days;
             decimal totalPris = antalNatter * valtRum.PricePerNight;
 
@@ -128,6 +116,28 @@ public class BookingMenu
         foreach (var bokning in bokningar)
         {
             Console.WriteLine($"Bokning {bokning.Id}: Rum {bokning.Room.RoomNumber}, {bokning.CheckIn:yyyy-MM-dd} till {bokning.CheckOut:yyyy-MM-dd}");
+        }
+    }
+    public void AvbokaRum()
+    {
+        Console.WriteLine("\n=== AVBOKA RUM ===");
+        Console.Write("Ange boknings-ID: ");
+
+        if (!int.TryParse(Console.ReadLine(), out int bookingId))
+        {
+            Console.WriteLine("Ogiltigt boknings-ID.");
+            return;
+        }
+
+        bool lyckades = _bookingService.CancelBooking(bookingId);
+
+        if (lyckades)
+        {
+            Console.WriteLine("Bokningen har avbokats!");
+        }
+        else
+        {
+            Console.WriteLine("Ingen bokning hittades med detta ID.");
         }
     }
 }

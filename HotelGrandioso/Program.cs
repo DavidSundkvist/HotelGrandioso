@@ -2,11 +2,15 @@ using HotelGrandioso.UI;
 using HotelGrandioso.Services;
 // Ger Program.cs tillgång till klasserna i Services.
 using HotelGrandioso.Data;
+using Microsoft.EntityFrameworkCore;
 
 
 
-// Skapa en anslutning till databasen
 using var db = new HotelContext();
+
+// Skapar eller uppdaterar databastabellerna innan vi lägger in hotellrummen.
+db.Database.Migrate();
+
 HotelSeeder.Seed(db);
 
 BookingService bookingService = new BookingService(db);
@@ -21,7 +25,7 @@ while (körProgrammet)
 Console.WriteLine("1. Boka rum");
 Console.WriteLine("2. Avboka rum");
 Console.WriteLine("3. Visa bokningar");
-Console.WriteLine("4. Visa lediga rum");
+Console.WriteLine("4. Visa hotellrum och priser");
 Console.WriteLine("5. Avsluta");
 
 Console.Write("Välj ett alternativ: ");
@@ -36,7 +40,7 @@ string val = Console.ReadLine() ?? "";
             break;
 
         case "2":
-            Console.WriteLine("Du valde att avboka rum.");
+            bookingMenu.AvbokaRum();
             break;
 
         case "3":
@@ -46,9 +50,9 @@ string val = Console.ReadLine() ?? "";
         case "4":
             Console.WriteLine("=== HOTELLETS RUM ===");
 
-            foreach (var rum in db.Rooms)
+            foreach (var rum in db.Rooms.Include(r => r.RoomType))
             {
-                Console.WriteLine($"Rum {rum.RoomNumber} - {rum.PricePerNight} kr/natt");
+                Console.WriteLine($"Rum {rum.RoomNumber} - {rum.RoomType.Name} - {rum.PricePerNight} kr/natt");
             }
 
             break;

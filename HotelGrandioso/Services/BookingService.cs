@@ -51,6 +51,11 @@ public class BookingService
 
         return true;
     }
+    public Room? GetRoomByNumber(int roomNumber)
+    {
+        return _context.Rooms
+            .FirstOrDefault(r => r.RoomNumber == roomNumber);
+    }
     public bool CancelBooking(int bookingId)
     {
         var booking = _context.Bookings
@@ -64,6 +69,39 @@ public class BookingService
         _context.Bookings.Remove(booking);
         _context.SaveChanges();
 
+        return true;
+    }
+    public bool BookRoomForGuest(
+    string firstName,
+    string lastName,
+    int roomId,
+    DateTime checkIn,
+    DateTime checkOut)
+    {
+        if (checkIn >= checkOut || !IsRoomAvailable(roomId, checkIn, checkOut))
+        {
+            return false;
+        }
+
+        using var transaction = _context.Database.BeginTransaction();
+
+        Guest guest = new Guest
+        {
+            FirstName = firstName,
+            LastName = lastName
+        };
+
+        _context.Guests.Add(guest);
+        _context.SaveChanges();
+
+        bool lyckades = BookRoom(guest.Id, roomId, checkIn, checkOut);
+
+        if (!lyckades)
+        {
+            return false;
+        }
+
+        transaction.Commit();
         return true;
     }
 }

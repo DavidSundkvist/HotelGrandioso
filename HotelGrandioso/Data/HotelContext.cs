@@ -15,7 +15,7 @@ public class HotelContext : DbContext
     // AI säger ersätt min { get; set; } = null!; med => Set<Guest>() eftersom => retunerar samlingen va EF och man slipper null! 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
-        string connectionString = "Data Source=HotelGrandioso/hotel.db";
+        string connectionString = "Data Source=hotel.db";
 
         optionsBuilder.UseSqlite(connectionString);
     }
