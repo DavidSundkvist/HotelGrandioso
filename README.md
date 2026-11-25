@@ -97,18 +97,20 @@ Jag har därför bara inkluderat `Id`, `FirstName` och `LastName` i min `Guest`-
 
 
 ## Designmönster
+## Designmönster
 
 Jag har delat upp programmet i olika klasser för att varje klass ska ha ett tydligt ansvar. Detta följer principen SRP (Single Responsibility Principle).
 
-- `HotelContext` hanterar anslutningen till SQLite-databasen via EF Core och innehåller programmets DbSet-samlingar.
-- `BookingService` innehåller bokningslogik och metoder för att hämta, skapa och avboka bokningar.
+- `HotelContext` hanterar anslutningen till SQLite-databasen via EF Core.
+- `HotelRepository` ansvarar för att hämta, spara och ta bort information i databasen.
+- `BookingService` ansvarar för bokningslogiken och kontrollerar bokningsregler, exempelvis att förhindra dubbelbokningar.
 - `BookingMenu` hanterar användarens inmatning och visar information i konsolen.
 
-Jag har valt denna uppdelning för att koden ska bli lättare att förstå, testa och underhålla.
+### Repository Pattern
 
-`BookingService` använder `HotelContext` för att läsa och ändra bokningar i databasen. Därför behöver inte all bokningslogik ligga direkt i `Program.cs`.
+Jag använder Repository Pattern för att separera databasarbetet från bokningslogiken. `BookingService` använder nu `HotelRepository` istället för att kommunicera direkt med `HotelContext`.
 
-
+Jag har valt denna uppdelning för att göra koden lättare att förstå, testa och underhålla.
 
 ## Tekniker
 

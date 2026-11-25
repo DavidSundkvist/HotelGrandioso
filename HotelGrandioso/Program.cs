@@ -13,8 +13,10 @@ db.Database.Migrate();
 
 HotelSeeder.Seed(db);
 
-BookingService bookingService = new BookingService(db);
-BookingMenu bookingMenu = new BookingMenu(db, bookingService);
+HotelRepository repository = new HotelRepository(db);
+
+BookingService bookingService = new BookingService(repository);
+BookingMenu bookingMenu = new BookingMenu(bookingService);
 
 Console.WriteLine("=== Hotel Grandioso ===");
 Console.WriteLine("Databasen är ansluten!");
@@ -50,7 +52,7 @@ string val = Console.ReadLine() ?? "";
         case "4":
             Console.WriteLine("=== HOTELLETS RUM ===");
 
-            foreach (var rum in db.Rooms.Include(r => r.RoomType))
+            foreach (var rum in repository.GetAllRooms())
             {
                 Console.WriteLine($"Rum {rum.RoomNumber} - {rum.RoomType.Name} - {rum.PricePerNight} kr/natt");
             }

@@ -1,20 +1,16 @@
 ﻿
-using HotelGrandioso.Data;
 using HotelGrandioso.Services;
-using HotelGrandioso.Models;
 namespace HotelGrandioso.UI;
 
 public class BookingMenu
 {
-    private readonly HotelContext _db;
     private readonly BookingService _bookingService;
 
-    public BookingMenu(HotelContext db, BookingService bookingService)
+    // Tar emot BookingService för att hantera bokningar
+    public BookingMenu(BookingService bookingService)
     {
-        _db = db;
         _bookingService = bookingService;
     }
-    //ny konstruktor som tar emot db och bookingservice som parametrar
     public void BokaRum()
     {
         Console.WriteLine("=== BOKA RUM ===");

@@ -6,23 +6,20 @@ namespace HotelGrandioso.Services;
 
 public class BookingService
 {
-    private readonly HotelContext _context;
+    private readonly HotelRepository _repository;
 
-    public BookingService(HotelContext context)
+    public BookingService(HotelRepository repository)
     {
-        _context = context;
+        _repository = repository;
     }
     public List<Booking> GetAllBookings()
     {
-        return _context.Bookings.Include(b => b.Room).ToList();
+        return _repository.GetAllBookings();
     }
 
     public bool IsRoomAvailable(int roomId, DateTime checkIn, DateTime checkOut)
     {
-        bool isBooked = _context.Bookings.Any(b =>
-            b.RoomId == roomId &&
-            b.CheckIn < checkOut &&
-            b.CheckOut > checkIn);
+        bool isBooked = _repository.HasOverlappingBooking(roomId, checkIn, checkOut);
 
         return !isBooked;
     }
@@ -45,45 +42,38 @@ public class BookingService
             CheckIn = checkIn,
             CheckOut = checkOut
         };
-
-        _context.Bookings.Add(booking);
-        _context.SaveChanges();
+        _repository.AddBooking(booking);
 
         return true;
     }
     public Room? GetRoomByNumber(int roomNumber)
     {
-        return _context.Rooms
-            .FirstOrDefault(r => r.RoomNumber == roomNumber);
+        return _repository.GetRoomByNumber(roomNumber);
     }
     public bool CancelBooking(int bookingId)
     {
-        var booking = _context.Bookings
-            .FirstOrDefault(b => b.Id == bookingId);
+        var booking = _repository.GetBookingById(bookingId);
 
         if (booking == null)
         {
             return false;
         }
 
-        _context.Bookings.Remove(booking);
-        _context.SaveChanges();
+        _repository.RemoveBooking(booking);
 
         return true;
     }
     public bool BookRoomForGuest(
-    string firstName,
-    string lastName,
-    int roomId,
-    DateTime checkIn,
-    DateTime checkOut)
+      string firstName,
+      string lastName,
+      int roomId,
+      DateTime checkIn,
+      DateTime checkOut)
     {
         if (checkIn >= checkOut || !IsRoomAvailable(roomId, checkIn, checkOut))
         {
             return false;
         }
-
-        using var transaction = _context.Database.BeginTransaction();
 
         Guest guest = new Guest
         {
@@ -91,17 +81,15 @@ public class BookingService
             LastName = lastName
         };
 
-        _context.Guests.Add(guest);
-        _context.SaveChanges();
-
-        bool lyckades = BookRoom(guest.Id, roomId, checkIn, checkOut);
-
-        if (!lyckades)
+        Booking booking = new Booking
         {
-            return false;
-        }
+            RoomId = roomId,
+            CheckIn = checkIn,
+            CheckOut = checkOut
+        };
 
-        transaction.Commit();
+        _repository.AddGuestAndBooking(guest, booking);
+
         return true;
     }
 }
